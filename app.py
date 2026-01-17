@@ -2,24 +2,28 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.embeddings import OpenAIEmbeddings#, HuggingFaceInstructEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from html_files import css, bot_template, user_template
-from langchain.llms import HuggingFaceHub
+#from langchain.llms import HuggingFaceHub
 
 def get_pdf_text(pdf_docs):
     text = ""
+    pdf_pages = []
     for pdf in pdf_docs:
         pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
-    return text
+        for page_num, page in enumerate(pdf_reader.pages, 1):
+            page_text = page.extract_text()
+            text += page_text
+            # Store page info with text length
+            pdf_pages.append({"source": pdf.name, "page": page_num, "text_len": len(page_text)})
+    return text, pdf_pages
 
 
-def get_text_chunks(text):
+def get_text_chunks(text, pdf_pages):
     text_splitter = CharacterTextSplitter(
         separator="\n",
         chunk_size=1000,
@@ -27,13 +31,38 @@ def get_text_chunks(text):
         length_function=len
     )
     chunks = text_splitter.split_text(text)
-    return chunks
+    
+    # Map metadatas to chunks
+    chunk_metadatas = []
+    char_pos = 0
+    page_idx = 0
+    accumulated_len = 0
+    
+    for chunk in chunks:
+        # Find which page this chunk belongs to
+        while page_idx < len(pdf_pages):
+            accumulated_len += pdf_pages[page_idx]["text_len"]
+            if char_pos < accumulated_len:
+                chunk_metadatas.append({
+                    "source": pdf_pages[page_idx]["source"],
+                    "page": pdf_pages[page_idx]["page"]
+                })
+                break
+            page_idx += 1
+        else:
+            # Fallback if we run out of pages
+            if pdf_pages:
+                chunk_metadatas.append(pdf_pages[-1])
+        
+        char_pos += len(chunk)
+    
+    return chunks, chunk_metadatas
 
 
-def get_vectorstore(text_chunks):
+def get_vectorstore(text_chunks, chunk_metadatas):
     embeddings = OpenAIEmbeddings()
     # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
-    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings, metadatas=chunk_metadatas)
     return vectorstore
 
 
@@ -52,8 +81,15 @@ def get_conversation_chain(vectorstore):
 
 
 def handle_userinput(user_question):
+    if st.session_state.conversation is None:
+        st.error("Please upload and process PDFs first!")
+        return
+    
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']
+    
+    # Get source documents using the retriever
+    source_documents = st.session_state.vectorstore.similarity_search(user_question, k=4)
 
     for i, message in enumerate(st.session_state.chat_history):
         if i % 2 == 0:
@@ -62,6 +98,16 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace(
                 "{{MSG}}", message.content), unsafe_allow_html=True)
+    
+    # Display source documents
+    if source_documents:
+        st.markdown("---")
+        st.subheader("📄 Fontes de Informação")
+        for i, doc in enumerate(source_documents, 1):
+            source_name = doc.metadata.get('source', 'Unknown')
+            page_num = doc.metadata.get('page', 'N/A')
+            with st.expander(f"Fonte {i}: {source_name} (Página {page_num})"):
+                st.write(doc.page_content)
 
 
 def main():
@@ -87,17 +133,18 @@ def main():
         if st.button("Process"):
             with st.spinner("Processing"):
                 # get pdf text
-                raw_text = get_pdf_text(pdf_docs)
+                raw_text, pdf_pages = get_pdf_text(pdf_docs)
 
                 # get the text chunks
-                text_chunks = get_text_chunks(raw_text)
+                text_chunks, chunk_metadatas = get_text_chunks(raw_text, pdf_pages)
 
                 # create vector store
-                vectorstore = get_vectorstore(text_chunks)
+                vectorstore = get_vectorstore(text_chunks, chunk_metadatas)
 
                 # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
                     vectorstore)
+                st.session_state.vectorstore = vectorstore
                 st.success("Processing complete! You can now ask questions about your documents.")
 
 if __name__ == '__main__':
