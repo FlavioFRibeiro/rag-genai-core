@@ -17,6 +17,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 # Carregar variáveis de ambiente no início
 load_dotenv()
 
+# Configurações do LLM
+LLM_MODEL = "gpt-3.5-turbo"
+
 
 def get_pdf_text(pdf_docs):
     """Efficiently extract text from PDFs and track source files"""
@@ -73,7 +76,7 @@ def get_vectorstore(text_chunks, chunk_metadatas):
 
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(model=LLM_MODEL)
 
     memory = ConversationBufferMemory(
         memory_key='chat_history', return_messages=True)
