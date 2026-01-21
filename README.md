@@ -1,4 +1,4 @@
-# AI Agent for Your Files (RAG PDF Chat)
+# RAG GenAI Core (RAG PDF Chat)
 
 A compact, well-structured Retrieval-Augmented Generation (RAG) app to chat with multiple PDFs. It is intentionally simple, but organized like a production codebase: core logic in `src/`, app UI in `apps/`, and clear separation between ingestion, retrieval, and orchestration.
 
