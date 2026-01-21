@@ -1,6 +1,6 @@
 # AI Agent for Your Files (RAG PDF Chat)
 
-This project is a lightweight Retrieval-Augmented Generation (RAG) app that lets you chat with multiple PDFs through a Streamlit UI. It keeps the code in a single file (`app.py`) to make cloud deployment cheap and fast.
+This project is a lightweight Retrieval-Augmented Generation (RAG) app that lets you chat with multiple PDFs through a Streamlit UI. The core logic lives in `src/`, and the UI lives in `apps/` for a clean, team-friendly structure.
 
 ## Features
 - Upload multiple PDFs and ask questions about their content.
@@ -34,10 +34,18 @@ OPENAI_API_KEY=your_key_here
 
 ## Run
 ```bash
-streamlit run app.py
+streamlit run apps/streamlit_app.py
 ```
 
+## Structure
+- `apps/streamlit_app.py` - Streamlit UI and session state
+- `apps/html_files.py` - HTML/CSS chat templates
+- `src/rag_genai_core/config.py` - shared settings
+- `src/rag_genai_core/ingestion.py` - PDF loading and chunking
+- `src/rag_genai_core/retrieval.py` - embeddings, vector store, and retriever chain
+- `src/rag_genai_core/rag_pipeline.py` - orchestrates the pipeline
+
 ## Notes
-- Everything is intentionally kept in `app.py` to simplify deployment on low-cost cloud hosting.
+- `apps/streamlit_app.py` is the entry point for the Streamlit app.
 - The app extracts per-page text and stores page metadata so you can identify where answers come from.
 - Source pages are rendered from the original PDFs to provide visual context.
