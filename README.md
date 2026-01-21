@@ -1,22 +1,27 @@
 # AI Agent for Your Files (RAG PDF Chat)
 
-This project is a lightweight Retrieval-Augmented Generation (RAG) app that lets you chat with multiple PDFs through a Streamlit UI. The core logic lives in `src/`, and the UI lives in `apps/` for a clean, team-friendly structure.
+A compact, well-structured Retrieval-Augmented Generation (RAG) app to chat with multiple PDFs. It is intentionally simple, but organized like a production codebase: core logic in `src/`, app UI in `apps/`, and clear separation between ingestion, retrieval, and orchestration.
 
-## Features
-- Upload multiple PDFs and ask questions about their content.
-- Page-aware retrieval (the answer can reference the source file and page).
-- Visual preview of the source PDF page under each bot response.
-- Simple UI with a guided flow (upload -> process -> ask).
+## Highlights
+- Multi-PDF chat with retrieval-augmented answers
+- Per-page metadata and visual page preview under each response
+- Clean, minimal structure that is easy to extend or hand off to a team
 
-## Tech Stack / Libraries
-- `streamlit` - web UI
+## How It Works (Short)
+1. PDFs are parsed page-by-page and chunked.
+2. Embeddings are generated and stored in a FAISS vector store.
+3. A retriever + LLM chain answers questions with source context.
+4. The matching page is rendered for quick visual verification.
+
+## Tech Stack
+- `streamlit` - UI
 - `python-dotenv` - environment variables
 - `PyPDF2` - PDF text extraction
-- `langchain` - conversational chain and memory
+- `langchain` - chains and memory
 - `langchain-openai` - OpenAI LLM + embeddings
-- `langchain-community` - FAISS vector store integration
-- `faiss-cpu` - vector similarity search backend (required by FAISS)
-- `PyMuPDF` - render PDF pages as images
+- `langchain-community` - FAISS integration
+- `faiss-cpu` - vector search backend
+- `PyMuPDF` - PDF page rendering
 
 ## Setup
 1. Create a virtual environment (optional but recommended).
@@ -26,7 +31,7 @@ This project is a lightweight Retrieval-Augmented Generation (RAG) app that lets
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file with your OpenAI key:
+3. Create a `.env` file in the project root:
 
 ```env
 OPENAI_API_KEY=your_key_here
@@ -37,15 +42,15 @@ OPENAI_API_KEY=your_key_here
 streamlit run apps/streamlit_app.py
 ```
 
-## Structure
-- `apps/streamlit_app.py` - Streamlit UI and session state
+## Project Structure
+- `apps/streamlit_app.py` - Streamlit UI + session state
 - `apps/html_files.py` - HTML/CSS chat templates
 - `src/rag_genai_core/config.py` - shared settings
 - `src/rag_genai_core/ingestion.py` - PDF loading and chunking
-- `src/rag_genai_core/retrieval.py` - embeddings, vector store, and retriever chain
-- `src/rag_genai_core/rag_pipeline.py` - orchestrates the pipeline
+- `src/rag_genai_core/retrieval.py` - embeddings, vector store, retriever chain
+- `src/rag_genai_core/rag_pipeline.py` - pipeline orchestrator
 
-## Notes
-- `apps/streamlit_app.py` is the entry point for the Streamlit app.
-- The app extracts per-page text and stores page metadata so you can identify where answers come from.
-- Source pages are rendered from the original PDFs to provide visual context.
+## Design Notes
+- The codebase is small by design, but modular for clean maintenance.
+- Each layer has a single responsibility, which keeps changes isolated.
+- New components (chunkers, vector stores, or LLMs) can be added without touching the UI.
