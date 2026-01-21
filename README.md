@@ -43,12 +43,16 @@ streamlit run apps/streamlit_app.py
 ```
 
 ## Project Structure
-- `apps/streamlit_app.py` - Streamlit UI + session state
-- `apps/html_files.py` - HTML/CSS chat templates
-- `src/rag_genai_core/config.py` - shared settings
-- `src/rag_genai_core/ingestion.py` - PDF loading and chunking
-- `src/rag_genai_core/retrieval.py` - embeddings, vector store, retriever chain
-- `src/rag_genai_core/rag_pipeline.py` - pipeline orchestrator
+rag-genai-core/
+├── apps/                 # Simple interfaces (API / UI)
+├── src/rag_genai_core/   # Core RAG logic
+│   ├── ingestion.py      
+│   ├── embeddings.py
+│   ├── vectorstore.py
+│   ├── retriever.py
+│   └── rag_pipeline.py
+├── requirements.txt
+└── README.md
 
 ## Design Notes
 - The codebase is small by design, but modular for clean maintenance.
