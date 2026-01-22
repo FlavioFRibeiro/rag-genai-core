@@ -48,6 +48,7 @@ def render_source_preview(doc):
         cache_key = (source_name, page_number)
         image_bytes = st.session_state.page_images.get(cache_key)
         if image_bytes is None:
+            pdf_doc = None
             try:
                 pdf_stream = st.session_state.pdf_bytes[source_name]
                 pdf_doc = fitz.open(stream=pdf_stream, filetype="pdf")
@@ -58,10 +59,11 @@ def render_source_preview(doc):
             except Exception:
                 image_bytes = None
             finally:
-                try:
-                    pdf_doc.close()
-                except Exception:
-                    pass
+                if pdf_doc is not None:
+                    try:
+                        pdf_doc.close()
+                    except Exception:
+                        pass
         if image_bytes:
             st.image(image_bytes, caption=f"{source_name} - page {page_number}")
 
