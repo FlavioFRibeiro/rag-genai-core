@@ -1,30 +1,29 @@
-# RAG GenAI Core (RAG PDF Chat)
+﻿# RAG_PDFs_AI_Agent
 
-A compact, well-structured Retrieval-Augmented Generation (RAG) app to chat with multiple PDFs. It is intentionally simple, but organized like a production codebase: core logic in `src/`, app UI in `apps/`, and clear separation between ingestion, retrieval, and orchestration.
+Simple, well-organized RAG app to chat with multiple PDFs. The project is small by design, with a clear split between the UI in `apps/` and core logic in `src/`.
 
 ## Highlights
 - Multi-PDF chat with retrieval-augmented answers
-- Per-page metadata and visual page preview under each response
-- Clean, minimal structure that is easy to extend or hand off to a team
+- Per-page metadata and visual page preview of the source
+- Clean structure that is easy to extend
 
-## How It Works (Short)
-1. PDFs are parsed page-by-page and chunked.
-2. Embeddings are generated and stored in a FAISS vector store.
-3. A retriever + LLM chain answers questions with source context.
-4. The matching page is rendered for quick visual verification.
+## How it works (short)
+1. PDFs are read page-by-page and chunked.
+2. Embeddings are generated and stored in FAISS.
+3. A retriever + LLM answer with source context.
+4. The most relevant page can be rendered for visual validation.
 
-## Tech Stack
+## Stack
 - `streamlit` - UI
 - `python-dotenv` - environment variables
-- `PyPDF2` - PDF text extraction
-- `langchain` - chains and memory
-- `langchain-openai` - OpenAI LLM + embeddings
-- `langchain-community` - FAISS integration
-- `faiss-cpu` - vector search backend
-- `PyMuPDF` - PDF page rendering
+- `PyPDF2` - text extraction
+- `langchain` / `langchain-openai` - LLM and chains
+- `langchain-community` - FAISS
+- `faiss-cpu` - vector search
+- `PyMuPDF` - page rendering
 
 ## Setup
-1. Create a virtual environment (optional but recommended).
+1. (Optional) Create a virtual environment.
 2. Install dependencies:
 
 ```bash
@@ -42,19 +41,24 @@ OPENAI_API_KEY=your_key_here
 streamlit run apps/streamlit_app.py
 ```
 
-## Project Structure
-rag-genai-core/
-├── apps/                 # Simple interfaces (API / UI)
-├── src/rag_genai_core/   # Core RAG logic
-│   ├── ingestion.py      
-│   ├── embeddings.py
-│   ├── vectorstore.py
-│   ├── retriever.py
-│   └── rag_pipeline.py
-├── requirements.txt
-└── README.md
+## Project structure
+RAG_PDFs_AI_Agent/
+|-- apps/                 # Streamlit UI and HTML templates
+|-- src/
+|   |-- rag_genai_core/   # Core RAG logic
+|   |   |-- config.py
+|   |   |-- ingestion.py
+|   |   |-- retrieval.py
+|   |   `-- rag_pipeline.py
+|-- requirements.txt
+`-- README.md
 
-## Design Notes
-- The codebase is small by design, but modular for clean maintenance.
-- Each layer has a single responsibility, which keeps changes isolated.
-- New components (chunkers, vector stores, or LLMs) can be added without touching the UI.
+## Quick configuration
+Key parameters are in `src/rag_genai_core/config.py`:
+- `LLM_MODEL` (default: `gpt-4o-mini`)
+- `CHUNK_SIZE` and `CHUNK_OVERLAP`
+- `PAGE_DPI` (page preview quality)
+
+## Design notes
+- Each module has a clear responsibility.
+- New chunkers, vector stores, or LLMs can be swapped without touching the UI.
