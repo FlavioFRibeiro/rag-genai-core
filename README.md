@@ -42,6 +42,7 @@ streamlit run apps/streamlit_app.py
 ```
 
 ## Project structure
+```text
 RAG_PDFs_AI_Agent/
 |-- apps/                 # Streamlit UI and HTML templates
 |-- src/
@@ -52,6 +53,7 @@ RAG_PDFs_AI_Agent/
 |   |   `-- rag_pipeline.py
 |-- requirements.txt
 `-- README.md
+```
 
 ## Quick configuration
 Key parameters are in `src/rag_genai_core/config.py`:
